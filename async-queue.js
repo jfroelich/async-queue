@@ -121,12 +121,6 @@ class AsyncQueue {
       this.runningTaskCount--;
     }
 
-    // Once the task completes we know we are not busy, as in, we
-    // know we are not saturated, as in, we know that this.concurrency
-    // - this.runningTaskCount is > 0. In that case, check if there are
-    // tasks in the queue now that we freed up a space and schedule
-    // to start the next one asap. We do not call this.drain directly
-    // because that could lead to stack overflow.
     if (this.runningTaskCount - this.tasks.length) {
       this.reschedule(0);
     }

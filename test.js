@@ -1,4 +1,3 @@
-// import AsyncQueue from './async-queue';
 const AsyncQueue = require('./async-queue');
 
 let taskCounter = 0;
