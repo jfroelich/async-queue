@@ -79,7 +79,7 @@ class AsyncQueue {
  */
 function reschedule(queue, delay) {
   if (!queue.paused) {
-    queue.timer = setTimeout(drain.bind(null, queue), delay);
+    queue.timer = setTimeout(drain, delay, queue);
   }
 }
 
