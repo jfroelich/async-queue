@@ -1,12 +1,4 @@
 /**
- * @typedef Task
- * @property {function} func
- * @property {any} args
- * @property {function} resolve
- * @property {function} reject
- */
-
-/**
  * A simple queue implementation
  */
 class AsyncQueue {
@@ -30,12 +22,17 @@ class AsyncQueue {
    * @returns {Promise<T>} Settles when the task completes to the func return value
    */
   run(func, ...args) {
-    const task = { func, args, resolve: null, reject: null };
+    const task = new Task();
+    task.func = func;
+    task.args = args;
+
     const promise = new Promise((resolve, reject) => {
       task.resolve = resolve;
       task.reject = reject;
     });
+
     this.tasks.push(task);
+
     if (!this.isSaturated()) {
       clearTimeout(this.timer);
       reschedule(this, 0);
@@ -121,6 +118,19 @@ async function drain(queue) {
 
   if (queue.runningTaskCount - queue.tasks.length) {
     reschedule(queue, 0);
+  }
+}
+
+class Task {
+  constructor() {
+    /** @type {function} */
+    this.func = undefined;
+    /** @type {any} */
+    this.args = undefined;
+    /** @type {function} */
+    this.resolve = undefined;
+    /** @type {function} */
+    this.reject = undefined;
   }
 }
 
