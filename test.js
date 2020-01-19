@@ -7,9 +7,12 @@ async function main() {
   queue.concurrency = 2;
   queue.busyDelay = 1000;
 
+  /** @type {Array<Promise<number>>} */
   const promises = [];
   for (let i = 0; i < 5; i++) {
-    promises.push(queue.run(testTask, i * 1000));
+    /** @type {Promise<number>} */
+    const promise = queue.run(testTask, i * 1000);
+    promises.push(promise);
   }
 
   // delayed enqueue
@@ -17,17 +20,20 @@ async function main() {
   promises.push(queue.run(testTask, 5000));
 
   // wait for all tasks to resolve
-  await Promise.all(promises);
+  const durations = await Promise.all(promises);
 
   console.log('All tasks completed');
+
+  for (const duration of durations) {
+    console.log('Task duration:', duration);
+  }
 }
 
 async function testTask(duration) {
-  const id = taskCounter;
-  taskCounter++;
-  console.log('Starting test task with id', id);
+  const id = taskCounter++;
+  console.log('Starting test task with id %s duration %d', id, duration);
   await new Promise(resolve => setTimeout(resolve, duration));
-  console.log('Ending test task with id', id);
+  console.log('Ending test task with id %s duration %d', id, duration);
   return duration;
 }
 

@@ -22,9 +22,12 @@ class AsyncQueue {
 
   /**
    * Enqueue a task. If the queue is busy, the task may not start running right away.
+   *
+   * @template T
+   *
    * @param {function} func A function to run
    * @param  {...any} args Parameters to func
-   * @returns {Promise} Settles when the task completes to the func return value
+   * @returns {Promise<T>} Settles when the task completes to the func return value
    */
   run(func, ...args) {
     const task = { func, args, resolve: null, reject: null };
