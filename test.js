@@ -1,11 +1,19 @@
 const AsyncQueue = require('./async-queue');
 
-let taskCounter = 0;
-
 async function main() {
   const queue = new AsyncQueue();
   queue.concurrency = 2;
   queue.busyDelay = 1000;
+
+  let taskCounter = 0;
+
+  async function testTask(duration) {
+    const id = taskCounter++;
+    console.log('start task id %s duration %d', id, duration);
+    await new Promise(resolve => setTimeout(resolve, duration));
+    console.log('end task id %s duration %d', id, duration);
+    return duration;
+  }
 
   /** @type {Array<Promise<number>>} */
   const promises = [];
@@ -27,14 +35,6 @@ async function main() {
   for (const duration of durations) {
     console.log('Task duration:', duration);
   }
-}
-
-async function testTask(duration) {
-  const id = taskCounter++;
-  console.log('Starting test task with id %s duration %d', id, duration);
-  await new Promise(resolve => setTimeout(resolve, duration));
-  console.log('Ending test task with id %s duration %d', id, duration);
-  return duration;
 }
 
 main().catch(console.error);
