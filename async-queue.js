@@ -35,15 +35,14 @@ class AsyncQueue {
     this.tasks.push(task);
     if (!this.isSaturated()) {
       clearTimeout(this.timer);
-      this.reschedule(0);
+      reschedule(this, 0);
     }
 
     return promise;
   }
 
   /**
-   * @returns {boolean} Whether the queue is full and cannot start on any
-   * more tasks
+   * @returns {boolean} Whether the queue is running at max concurrency
    */
   isSaturated() {
     console.assert(this.runningTaskCount <= this.concurrency,
@@ -67,63 +66,63 @@ class AsyncQueue {
   resume(immediately = true) {
     this.paused = false;
     if (immediately) {
-      this.drain().catch(console.warn);
+      drain(this).catch(console.warn);
     } else {
-      this.reschedule(0);
+      reschedule(this, 0);
     }
   }
+}
 
-  /**
-   * Schedule the queue to start running tasks after the given delay. This does nothing
-   * if the queue is paused.
-   * @param {number} delay
-   */
-  reschedule(delay) {
-    if (this.paused) {
-      return null;
-    }
-    this.timer = setTimeout(this.drain.bind(this), delay);
-    return this.timer;
+/**
+ * Schedule the queue to start running tasks after the given delay
+ * @param {number} delay Milliseonds to wait before draining
+ */
+function reschedule(queue, delay) {
+  if (!queue.paused) {
+    queue.timer = setTimeout(drain.bind(null, queue), delay);
+    return queue.timer;
+  }
+}
+
+/**
+ * Run tasks in the queue until the queue is empty
+ * @param {AsyncQueue} queue
+ * @returns {Promise<void>}
+ */
+async function drain(queue) {
+  if (queue.paused) {
+    return;
   }
 
-  /**
-   * Run tasks in the queue until the queue is empty
-   */
-  async drain() {
-    if (this.paused) {
-      return;
-    }
+  if (!queue.tasks.length) {
+    return;
+  }
 
-    if (!this.tasks.length) {
-      return;
-    }
+  if (queue.isSaturated()) {
+    reschedule(queue, queue.busyDelay);
+    return;
+  }
 
-    if (this.isSaturated()) {
-      this.reschedule(this.busyDelay);
-      return;
-    }
+  const task = queue.tasks.shift();
 
-    const task = this.tasks.shift();
-    if (!task) {
-      // This is not fatal but we expect to always get a task because
-      // we checked tasks.length.
-      return;
-    }
+  // TODO: replace with assert?
+  if (!task) {
+    return;
+  }
 
-    this.runningTaskCount++;
+  queue.runningTaskCount++;
 
-    try {
-      const result = await task.func(...task.args);
-      task.resolve(result);
-    } catch (error) {
-      task.reject(error);
-    } finally {
-      this.runningTaskCount--;
-    }
+  try {
+    const result = await task.func(...task.args);
+    task.resolve(result);
+  } catch (error) {
+    task.reject(error);
+  } finally {
+    queue.runningTaskCount--;
+  }
 
-    if (this.runningTaskCount - this.tasks.length) {
-      this.reschedule(0);
-    }
+  if (queue.runningTaskCount - queue.tasks.length) {
+    reschedule(queue, 0);
   }
 }
 
