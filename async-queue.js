@@ -19,12 +19,8 @@ class AsyncQueue {
    * @returns {Promise<T>} Settles when the task completes
    */
   run(func, ...args) {
+    /** @type {Task<T>} */
     const task = new Task(func, ...args);
-    const promise = new Promise((resolve, reject) => {
-      task.resolve = resolve;
-      task.reject = reject;
-    });
-
     this.tasks.push(task);
 
     if (!this.isSaturated()) {
@@ -32,7 +28,7 @@ class AsyncQueue {
       reschedule(this, 0);
     }
 
-    return promise;
+    return task.promise;
   }
 
   /** @returns {boolean} Whether the queue is running at max concurrency */
@@ -109,20 +105,23 @@ async function drain(queue) {
   }
 }
 
+/**
+ * @template T type of value from promise resolve
+ */
 class Task {
   /**
    * @param {function} [func]
    * @param {...any} args
    */
   constructor(func, ...args) {
-    /** @type {function} */
     this.func = func;
-    /** @type {any} */
     this.args = args;
-    /** @type {function} */
-    this.resolve = undefined;
-    /** @type {function} */
-    this.reject = undefined;
+
+    /** @type {Promise<T>} */
+    this.promise = new Promise((resolve, reject) => {
+      this.resolve = resolve;
+      this.reject = reject;
+    });
   }
 }
 
