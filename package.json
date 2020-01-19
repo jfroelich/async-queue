@@ -1,0 +1,20 @@
+{
+  "name": "async-queue",
+  "version": "1.0.0",
+  "description": "simple promise-based async queue",
+  "main": "async-queue.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jfroelich/async-queue.git"
+  },
+  "keywords": [
+    "async",
+    "queue"
+  ],
+  "author": "Josh Froelich",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jfroelich/async-queue/issues"
+  },
+  "homepage": "https://github.com/jfroelich/async-queue#readme"
+}
