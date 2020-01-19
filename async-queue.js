@@ -34,9 +34,6 @@ class AsyncQueue {
     });
     this.tasks.push(task);
     if (!this.isSaturated()) {
-      console.log('Draining immediately on task add');
-      // We cannot call drain directly because that would
-      // delay starting other tasks.
       clearTimeout(this.timer);
       this.reschedule(0);
     }
@@ -44,15 +41,29 @@ class AsyncQueue {
     return promise;
   }
 
+  /**
+   * @returns {boolean} Whether the queue is full and cannot start on any
+   * more tasks
+   */
   isSaturated() {
+    console.assert(this.runningTaskCount <= this.concurrency,
+      'concurrency limit exceeded');
     return this.runningTaskCount === this.concurrency;
   }
 
+  /**
+   * Configure the queue to stop running new tasks. Does not abort running tasks.
+   */
   pause() {
     this.paused = true;
     clearTimeout(this.timer);
   }
 
+  /**
+   * Reenable the queue to run tasks. Begins running pending tasks.
+   * @param {boolean} [immediately] whether to begin running pending tasks in this
+   * epoch or in the next
+   */
   resume(immediately = true) {
     this.paused = false;
     if (immediately) {
@@ -62,31 +73,32 @@ class AsyncQueue {
     }
   }
 
+  /**
+   * Schedule the queue to start running tasks after the given delay. This does nothing
+   * if the queue is paused.
+   * @param {number} delay
+   */
   reschedule(delay) {
     if (this.paused) {
       return null;
     }
-    console.log('Draining in %s ms', delay);
-    // console.debug('Rescheduling with delay %d', delay);
     this.timer = setTimeout(this.drain.bind(this), delay);
     return this.timer;
   }
 
+  /**
+   * Run tasks in the queue until the queue is empty
+   */
   async drain() {
     if (this.paused) {
       return;
     }
 
     if (!this.tasks.length) {
-      console.debug('no tasks to drain');
       return;
     }
 
-    console.assert(this.runningTaskCount <= this.concurrency,
-      'concurrency limit exceeded');
-
     if (this.isSaturated()) {
-      console.debug('rescheduling with delay while saturated');
       this.reschedule(this.busyDelay);
       return;
     }
@@ -95,7 +107,6 @@ class AsyncQueue {
     if (!task) {
       // This is not fatal but we expect to always get a task because
       // we checked tasks.length.
-      console.warn('no task?');
       return;
     }
 
@@ -117,7 +128,6 @@ class AsyncQueue {
     // to start the next one asap. We do not call this.drain directly
     // because that could lead to stack overflow.
     if (this.runningTaskCount - this.tasks.length) {
-      console.log('Rescheduling on task complete');
       this.reschedule(0);
     }
   }

@@ -13,20 +13,22 @@ async function main() {
     promises.push(queue.run(testTask, i * 1000));
   }
 
-  // test waiting a bit and enqueuing a task a while later
+  // delayed enqueue
   await new Promise(resolve => setTimeout(resolve, 1000));
   promises.push(queue.run(testTask, 5000));
 
+  // wait for all tasks to resolve
   await Promise.all(promises);
+
   console.log('All tasks completed');
 }
 
 async function testTask(duration) {
   const id = taskCounter;
   taskCounter++;
-  console.log('Starting test task ', id);
+  console.log('Starting test task with id', id);
   await new Promise(resolve => setTimeout(resolve, duration));
-  console.log('Ending test task with duration', id);
+  console.log('Ending test task with id', id);
   return duration;
 }
 
