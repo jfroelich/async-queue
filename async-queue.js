@@ -74,18 +74,17 @@ class AsyncQueue {
 }
 
 /**
- * Schedule the queue to start running tasks after the given delay
- * @param {number} delay Milliseonds to wait before draining
+ * @param {AsyncQueue} queue
+ * @param {number} delay ms
  */
 function reschedule(queue, delay) {
   if (!queue.paused) {
     queue.timer = setTimeout(drain.bind(null, queue), delay);
-    return queue.timer;
   }
 }
 
 /**
- * Run tasks in the queue until the queue is empty
+ * Run tasks in the queue until it is empty
  * @param {AsyncQueue} queue
  * @returns {Promise<void>}
  */
@@ -104,11 +103,7 @@ async function drain(queue) {
   }
 
   const task = queue.tasks.shift();
-
-  // TODO: replace with assert?
-  if (!task) {
-    return;
-  }
+  console.assert(!!task, 'non-empty queue shift did not produce task');
 
   queue.runningTaskCount++;
 
