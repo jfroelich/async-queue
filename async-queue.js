@@ -19,10 +19,7 @@ class AsyncQueue {
    * @returns {Promise<T>} Settles when the task completes
    */
   run(func, ...args) {
-    const task = new Task();
-    task.func = func;
-    task.args = args;
-
+    const task = new Task(func, ...args);
     const promise = new Promise((resolve, reject) => {
       task.resolve = resolve;
       task.reject = reject;
@@ -113,11 +110,15 @@ async function drain(queue) {
 }
 
 class Task {
-  constructor() {
+  /**
+   * @param {function} [func]
+   * @param {...any} args
+   */
+  constructor(func, ...args) {
     /** @type {function} */
-    this.func = undefined;
+    this.func = func;
     /** @type {any} */
-    this.args = undefined;
+    this.args = args;
     /** @type {function} */
     this.resolve = undefined;
     /** @type {function} */
