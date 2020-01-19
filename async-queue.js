@@ -1,6 +1,3 @@
-/**
- * A simple queue implementation
- */
 class AsyncQueue {
   constructor() {
     /** @type {Array<Task>} */
@@ -13,13 +10,13 @@ class AsyncQueue {
   }
 
   /**
-   * Enqueue a task. If the queue is busy, the task may not start running right away.
+   * Enqueue a task
    *
-   * @template T
+   * @template T the type of the return value of func
    *
    * @param {function} func A function to run
    * @param  {...any} args Parameters to func
-   * @returns {Promise<T>} Settles when the task completes to the func return value
+   * @returns {Promise<T>} Settles when the task completes
    */
   run(func, ...args) {
     const task = new Task();
@@ -41,27 +38,22 @@ class AsyncQueue {
     return promise;
   }
 
-  /**
-   * @returns {boolean} Whether the queue is running at max concurrency
-   */
+  /** @returns {boolean} Whether the queue is running at max concurrency */
   isSaturated() {
     console.assert(this.runningTaskCount <= this.concurrency,
       'concurrency limit exceeded');
     return this.runningTaskCount === this.concurrency;
   }
 
-  /**
-   * Configure the queue to stop running new tasks. Does not abort running tasks.
-   */
+  /** Prohibit the queue from starting new tasks */
   pause() {
     this.paused = true;
     clearTimeout(this.timer);
   }
 
   /**
-   * Reenable the queue to run tasks. Begins running pending tasks.
-   * @param {boolean} [immediately] whether to begin running pending tasks in this
-   * epoch or in the next
+   * Allow the queue to start new tasks
+   * @param {boolean} [immediately] whether to run in this tick or the next
    */
   resume(immediately = true) {
     this.paused = false;
@@ -84,7 +76,6 @@ function reschedule(queue, delay) {
 }
 
 /**
- * Run tasks in the queue until it is empty
  * @param {AsyncQueue} queue
  * @returns {Promise<void>}
  */
