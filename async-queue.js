@@ -1,7 +1,8 @@
 class AsyncQueue {
   constructor() {
-    /** @type {Array<Task>} */
-    this.tasks = [];
+    this.head = undefined;
+    this.tail = undefined;
+
     this.runningTaskCount = 0;
     this.concurrency = 1;
     this.timer = null;
@@ -21,7 +22,15 @@ class AsyncQueue {
   run(func, ...args) {
     /** @type {Task<T>} */
     const task = new Task(func, ...args);
-    this.tasks.push(task);
+
+    if (this.tail) {
+      this.tail.next = task;
+    } else {
+      this.head = task;
+    }
+
+    // In both cases the added task is the new tail
+    this.tail = task;
 
     if (!this.isSaturated()) {
       clearTimeout(this.timer);
@@ -31,23 +40,19 @@ class AsyncQueue {
     return task.promise;
   }
 
-  /** @returns {boolean} Whether the queue is running at max concurrency */
+  /** Whether the queue is running at max concurrency */
   isSaturated() {
     console.assert(this.runningTaskCount <= this.concurrency,
       'concurrency limit exceeded');
     return this.runningTaskCount === this.concurrency;
   }
 
-  /** Prohibit the queue from starting new tasks */
   pause() {
     this.paused = true;
     clearTimeout(this.timer);
   }
 
-  /**
-   * Allow the queue to start new tasks
-   * @param {boolean} [immediately] whether to run in this tick or the next
-   */
+  /** @param {boolean} [immediately] whether to run in this tick or the next */
   resume(immediately = true) {
     this.paused = false;
     if (immediately) {
@@ -55,6 +60,12 @@ class AsyncQueue {
     } else {
       reschedule(this, 0);
     }
+  }
+
+  get length() {
+    let length = 0;
+    for (let node = this.head; node; node = node.next, length++);
+    return length;
   }
 }
 
@@ -77,17 +88,19 @@ async function drain(queue) {
     return;
   }
 
-  if (!queue.tasks.length) {
-    return;
-  }
-
   if (queue.isSaturated()) {
     reschedule(queue, queue.busyDelay);
     return;
   }
 
-  const task = queue.tasks.shift();
-  console.assert(!!task, 'non-empty queue shift did not produce task');
+  const task = queue.head;
+  if (!task) {
+    return;
+  }
+
+  queue.head = queue.head ? queue.head.next : undefined;
+  queue.tail = queue.head ? queue.tail : undefined;
+  task.next = undefined;
 
   queue.runningTaskCount++;
 
@@ -100,7 +113,7 @@ async function drain(queue) {
     queue.runningTaskCount--;
   }
 
-  if (queue.runningTaskCount - queue.tasks.length) {
+  if (queue.runningTaskCount - queue.length) {
     reschedule(queue, 0);
   }
 }
@@ -122,6 +135,8 @@ class Task {
       this.resolve = resolve;
       this.reject = reject;
     });
+
+    this.next = undefined;
   }
 }
 
