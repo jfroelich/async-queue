@@ -98,8 +98,11 @@ async function drain(queue) {
     return;
   }
 
-  queue.head = queue.head ? queue.head.next : undefined;
+  // we know queue.head is defined
+  queue.head = queue.head.next;
+
   queue.tail = queue.head ? queue.tail : undefined;
+
   task.next = undefined;
 
   queue.runningTaskCount++;
