@@ -116,7 +116,7 @@ async function drain(queue) {
     queue.runningTaskCount--;
   }
 
-  if (queue.runningTaskCount - queue.length) {
+  if (!this.paused && (queue.runningTaskCount - queue.length)) {
     reschedule(queue, 0);
   }
 }
