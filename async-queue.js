@@ -44,7 +44,7 @@ class AsyncQueue {
   isSaturated() {
     console.assert(this.runningTaskCount <= this.concurrency,
       'concurrency limit exceeded');
-    return this.runningTaskCount === this.concurrency;
+    return this.runningTaskCount >= this.concurrency;
   }
 
   pause() {
