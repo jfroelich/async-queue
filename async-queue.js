@@ -32,7 +32,7 @@ class AsyncQueue {
     // In both cases the added task is the new tail
     this.tail = task;
 
-    if (!this.isSaturated()) {
+    if (!this.paused && !this.isSaturated()) {
       clearTimeout(this.timer);
       reschedule(this, 0);
     }
