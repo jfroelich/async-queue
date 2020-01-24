@@ -11,13 +11,17 @@ class AsyncQueue {
   }
 
   /**
-   * Enqueue a task
+   * Enqueue a function call. This immediately places the call in
+   * the queue and immediately returns a promise that will
+   * eventually resolve once the call completes.
    *
    * @template T the type of the return value of func
    *
-   * @param {function} func A function to run
-   * @param  {...any} args Parameters to func
-   * @returns {Promise<T>} Settles when the task completes
+   * @param {function} func A function to call
+   * @param  {...any} args Parameters to function when it is called
+   * @returns {Promise<T>} Settles when the function call completes
+   * and either resolves to the function's return value or rejects
+   * with an error.
    */
   run(func, ...args) {
     /** @type {Task<T>} */
@@ -63,8 +67,6 @@ class AsyncQueue {
 }
 
 /**
- * Append a list node to a list
- *
  * @typedef ListNode
  * @property {ListNode} next
  *
