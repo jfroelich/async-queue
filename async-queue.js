@@ -101,6 +101,23 @@ function reschedule(queue, delay) {
  * @returns {Promise<void>}
  */
 async function drain(queue) {
+  // If we are draining right now, we assume responsibility for
+  // rescheduling ourselves, and want to cancel any kind of
+  // other enqueued request to drain. This is harmless if that
+  // is not the case.
+  clearTimeout(queue.timer);
+
+  // There are 3 main reasons to not drain, only one of which
+  // involves rescheduling ourself to run again:
+  // 1) we were instructed to do nothing (paused), and
+  //    we should not reschedule because we will explicitly
+  //    be told later (via resume) to try again
+  // 2) we are too busy right now, we should reschedule
+  //    because we can safely conclude trying again is worthwhile
+  // 3) there is nothing to do (and so we should also not
+  //    reschedule because schedule is done on add to avoid empty
+  //    poll)
+
   if (queue.paused) {
     return;
   }
