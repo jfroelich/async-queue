@@ -23,14 +23,7 @@ class AsyncQueue {
     /** @type {Task<T>} */
     const task = new Task(func, ...args);
 
-    if (this.tail) {
-      this.tail.next = task;
-    } else {
-      this.head = task;
-    }
-
-    // In both cases the added task is the new tail
-    this.tail = task;
+    listAppend(this, task);
 
     if (!this.paused && !this.isSaturated()) {
       clearTimeout(this.timer);
@@ -67,6 +60,28 @@ class AsyncQueue {
     for (let node = this.head; node; node = node.next, length++);
     return length;
   }
+}
+
+/**
+ * Append a list node to a list
+ *
+ * @typedef ListNode
+ * @property {ListNode} next
+ *
+ * @param {{ head: ListNode, tail: ListNode }} list
+ * @param {{ next: ListNode }} node
+ */
+function listAppend(list, node) {
+  if (list.tail) {
+    // The list is not empty, so we point the last node to the given node
+    list.tail.next = node;
+  } else {
+    // The list is empty, so we create a new head
+    list.head = node;
+  }
+
+  // Point the tail to the given node
+  list.tail = node;
 }
 
 /**
