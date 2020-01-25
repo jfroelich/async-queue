@@ -1,3 +1,11 @@
+/**
+ * @typedef ListNode
+ * @property {ListNode} next
+ */
+
+/**
+ * @class AsyncQueue
+ */
 class AsyncQueue {
   constructor() {
     this.head = undefined;
@@ -60,15 +68,26 @@ class AsyncQueue {
   }
 
   get length() {
-    let length = 0;
-    for (let node = this.head; node; node = node.next, length++);
-    return length;
+    return listLength(this);
   }
 }
 
 /**
- * @typedef ListNode
- * @property {ListNode} next
+ * Count the number of nodes in a list
+ * @param {{ head: ListNode, tail: ListNode }} list
+ */
+function listLength(list) {
+  let length = 0;
+  let node = list.head;
+  while (node) {
+    node = node.next;
+    length++;
+  }
+  return length;
+}
+
+/**
+
  *
  * @param {{ head: ListNode, tail: ListNode }} list
  * @param {{ next: ListNode }} node
