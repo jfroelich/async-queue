@@ -75,15 +75,27 @@ class AsyncQueue {
  */
 function listAppend(list, node) {
   if (list.tail) {
-    // The list is not empty, so we point the last node to the given node
     list.tail.next = node;
   } else {
-    // The list is empty, so we create a new head
     list.head = node;
   }
 
-  // Point the tail to the given node
   list.tail = node;
+}
+
+/**
+ * Remove the first node from the list and return it
+ * Returns undefined if the list is empty
+ * @param {object} list
+ */
+function listPop(list) {
+  const node = list.head;
+  if (node) {
+    list.head = node.next;
+    list.tail = list.head ? list.tail : undefined;
+    node.next = undefined;
+  }
+  return node;
 }
 
 /**
@@ -127,17 +139,10 @@ async function drain(queue) {
     return;
   }
 
-  const task = queue.head;
+  const task = listPop(queue);
   if (!task) {
     return;
   }
-
-  // we know queue.head is defined
-  queue.head = queue.head.next;
-
-  queue.tail = queue.head ? queue.tail : undefined;
-
-  task.next = undefined;
 
   queue.runningTaskCount++;
 
