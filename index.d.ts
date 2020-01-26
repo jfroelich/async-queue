@@ -15,33 +15,23 @@ declare class AsyncQueue implements AsyncQueue.List {
   head: AsyncQueue.ListNode;
   tail: AsyncQueue.ListNode;
 
-  /**
-   * Enqueue a function to eventually run. Returns a promise that
-   * resolves when the called function completes or rejects when the
-   * called function throws an error.
-   */
+  /** Enqueue a function to eventually run */
   run<OutputType>(
-    func: (...arg0: any[]) => OutputType | Promise<OutputType>,
+    func: (...args: any[]) => OutputType | Promise<OutputType>,
     ...args: any[]
   ): Promise<OutputType>;
 
-  /**
-   * Returns whether the queue is currently at max concurrency
-   */
+  /** Returns whether the queue is currently at max concurrency */
   isSaturated(): boolean;
 
   /**
-   * Pauses the queue. Does not abort currently running tasks.
-   * If the queue is scheduled to drain itself, that drain is canceled.
-   * Future drain attempts will not deplete the queue nor run tasks.
+   * Stop polling the queue. Currently running tasks continue but tasks
+   * waiting to start will no longer start.
    */
   pause(): void;
 
-  /**
-   * Unpauses the queue
-   * @param immediately in this tick if true, otherwise in later tick
-   */
-  resume(immediately?: boolean): void;
+  /** Start polling the queue */
+  resume(): void;
 }
 
 declare namespace AsyncQueue {

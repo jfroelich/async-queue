@@ -38,13 +38,9 @@ class AsyncQueue {
     clearTimeout(this.timeoutId);
   }
 
-  resume(immediately = true) {
+  resume() {
     this.paused = false;
-    if (immediately) {
-      poll(this).catch(console.warn);
-    } else {
-      reschedule(this, 0);
-    }
+    reschedule(this, 0);
   }
 
   get length() {
