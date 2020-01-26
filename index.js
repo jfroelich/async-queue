@@ -5,7 +5,10 @@ class AsyncQueue {
 
     this.runningTaskCount = 0;
     this.concurrency = 1;
-    this.timer = null;
+
+    this.timeoutTimer = null;
+    this.immediateTimer = null;
+
     this.paused = false;
     this.busyDelay = 0;
   }
@@ -15,7 +18,10 @@ class AsyncQueue {
     listAppend(this, task);
 
     if (!this.paused && !this.isSaturated()) {
-      clearTimeout(this.timer);
+      // @ts-ignore
+      clearImmediate(this.immediateTimer);
+      clearTimeout(this.timeoutTimer);
+
       reschedule(this, 0);
     }
 
@@ -28,7 +34,10 @@ class AsyncQueue {
 
   pause() {
     this.paused = true;
-    clearTimeout(this.timer);
+
+    // @ts-ignore
+    clearImmediate(this.immediateTimer);
+    clearTimeout(this.timeoutTimer);
   }
 
   resume(immediately = true) {
@@ -77,12 +86,20 @@ function listPop(list) {
 
 function reschedule(queue, delay) {
   if (!queue.paused) {
-    queue.timer = setTimeout(poll, delay, queue);
+    if (delay === 0) {
+      // @ts-ignore
+      queue.immediateTimer = setImmediate(poll, queue);
+    } else {
+      queue.timeoutTimer = setTimeout(poll, delay, queue);
+    }
   }
 }
 
 async function poll(queue) {
-  clearTimeout(queue.timer);
+  // @ts-ignore
+  clearImmediate(queue.immediateTimer);
+  clearTimeout(queue.timeoutTimer);
+
   if (queue.paused) {
     return;
   }
