@@ -7,6 +7,7 @@ async function main() {
 
   let taskCounter = 0;
 
+  /** @returns {Promise<number>} */
   async function testTask(duration) {
     const id = taskCounter++;
     console.log('start task id %s duration %d', id, duration);

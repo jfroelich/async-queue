@@ -16,10 +16,7 @@ declare class AsyncQueue implements AsyncQueue.List {
   tail: AsyncQueue.ListNode;
 
   /** Enqueue a function to eventually run */
-  run<OutputType>(
-    func: (...args: any[]) => OutputType | Promise<OutputType>,
-    ...args: any[]
-  ): Promise<OutputType>;
+  run(func: (...args: any[]) => any, ...args: any[]): Promise<ReturnType<func>>;
 
   /** Returns whether the queue is currently at max concurrency */
   isSaturated(): boolean;
@@ -35,6 +32,7 @@ declare class AsyncQueue implements AsyncQueue.List {
 }
 
 declare namespace AsyncQueue {
+
   interface ListNode {
     next: ListNode
   }
