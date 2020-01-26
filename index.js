@@ -34,7 +34,7 @@ class AsyncQueue {
   resume(immediately = true) {
     this.paused = false;
     if (immediately) {
-      drain(this).catch(console.warn);
+      poll(this).catch(console.warn);
     } else {
       reschedule(this, 0);
     }
@@ -77,11 +77,11 @@ function listPop(list) {
 
 function reschedule(queue, delay) {
   if (!queue.paused) {
-    queue.timer = setTimeout(drain, delay, queue);
+    queue.timer = setTimeout(poll, delay, queue);
   }
 }
 
-async function drain(queue) {
+async function poll(queue) {
   clearTimeout(queue.timer);
   if (queue.paused) {
     return;
