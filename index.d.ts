@@ -1,4 +1,4 @@
-declare class AsyncQueue {
+declare class AsyncQueue implements AsyncQueue.List {
   /**
    * The maximum number of concurrent tasks permitted
    */
@@ -12,12 +12,18 @@ declare class AsyncQueue {
 
   length: number;
 
+  head: AsyncQueue.ListNode;
+  tail: AsyncQueue.ListNode;
+
   /**
    * Enqueue a function to eventually run. Returns a promise that
    * resolves when the called function completes or rejects when the
    * called function throws an error.
    */
-  run(func: function, ...args: args[]): Promise;
+  run<OutputType>(
+    func: (...arg0: any[]) => OutputType | Promise<OutputType>,
+    ...args: any[]
+  ): Promise<OutputType>;
 
   /**
    * Returns whether the queue is currently at max concurrency
@@ -36,6 +42,24 @@ declare class AsyncQueue {
    * @param immediately in this tick if true, otherwise in later tick
    */
   resume(immediately?: boolean): void;
+}
+
+declare namespace AsyncQueue {
+  interface ListNode {
+    next: ListNode
+  }
+
+  interface List {
+    head: ListNode
+    tail: ListNode
+  }
+
+  class Task implements ListNode {
+    func: any;
+    resolve: any;
+    reject: any;
+    next: ListNode
+  }
 }
 
 export = AsyncQueue;
