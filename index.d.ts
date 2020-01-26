@@ -52,6 +52,7 @@ declare namespace AsyncQueue {
   interface List {
     head: ListNode
     tail: ListNode
+    length: number
   }
 
   class Task implements ListNode {
