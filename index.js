@@ -6,8 +6,8 @@ class AsyncQueue {
     this.runningTaskCount = 0;
     this.concurrency = 1;
 
-    this.timeoutTimer = null;
-    this.immediateTimer = null;
+    this.timeoutId = null;
+    this.immediateId = null;
 
     this.paused = false;
     this.busyDelay = 0;
@@ -18,8 +18,8 @@ class AsyncQueue {
     listAppend(this, task);
 
     if (!this.paused && !this.isSaturated()) {
-      clearImmediate(this.immediateTimer);
-      clearTimeout(this.timeoutTimer);
+      clearImmediate(this.immediateId);
+      clearTimeout(this.timeoutId);
 
       reschedule(this, 0);
     }
@@ -34,8 +34,8 @@ class AsyncQueue {
   pause() {
     this.paused = true;
 
-    clearImmediate(this.immediateTimer);
-    clearTimeout(this.timeoutTimer);
+    clearImmediate(this.immediateId);
+    clearTimeout(this.timeoutId);
   }
 
   resume(immediately = true) {
@@ -85,16 +85,16 @@ function listPop(list) {
 function reschedule(queue, delay) {
   if (!queue.paused) {
     if (delay === 0) {
-      queue.immediateTimer = setImmediate(poll, queue);
+      queue.immediateId = setImmediate(poll, queue);
     } else {
-      queue.timeoutTimer = setTimeout(poll, delay, queue);
+      queue.timeoutId = setTimeout(poll, delay, queue);
     }
   }
 }
 
 async function poll(queue) {
-  clearImmediate(queue.immediateTimer);
-  clearTimeout(queue.timeoutTimer);
+  clearImmediate(queue.immediateId);
+  clearTimeout(queue.timeoutId);
 
   if (queue.paused) {
     return;
