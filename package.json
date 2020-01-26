@@ -2,7 +2,7 @@
   "name": "async-queue",
   "version": "1.0.0",
   "description": "simple promise-based async queue",
-  "main": "async-queue.js",
+  "main": "index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jfroelich/async-queue.git"

@@ -1,4 +1,4 @@
-const AsyncQueue = require('./async-queue');
+const AsyncQueue = require('.');
 
 async function main() {
   const queue = new AsyncQueue();
@@ -15,23 +15,16 @@ async function main() {
     return duration;
   }
 
-  /** @type {Array<Promise<number>>} */
   const promises = [];
   for (let i = 0; i < 5; i++) {
-    /** @type {Promise<number>} */
     const promise = queue.run(testTask, i * 1000);
     promises.push(promise);
   }
 
-  // delayed enqueue
   await new Promise(resolve => setTimeout(resolve, 1000));
   promises.push(queue.run(testTask, 5000));
-
-  // wait for all tasks to resolve
   const durations = await Promise.all(promises);
-
   console.log('All tasks completed');
-
   for (const duration of durations) {
     console.log('Task duration:', duration);
   }
