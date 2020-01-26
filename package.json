@@ -16,5 +16,6 @@
   "bugs": {
     "url": "https://github.com/jfroelich/async-queue/issues"
   },
-  "homepage": "https://github.com/jfroelich/async-queue#readme"
+  "homepage": "https://github.com/jfroelich/async-queue#readme",
+  "types": "index.d.ts"
 }
