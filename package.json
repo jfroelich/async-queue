@@ -17,5 +17,8 @@
     "url": "https://github.com/jfroelich/async-queue/issues"
   },
   "homepage": "https://github.com/jfroelich/async-queue#readme",
-  "types": "index.d.ts"
+  "types": "index.d.ts",
+  "devDependencies": {
+    "@types/node": "^13.5.0"
+  }
 }

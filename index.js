@@ -18,7 +18,6 @@ class AsyncQueue {
     listAppend(this, task);
 
     if (!this.paused && !this.isSaturated()) {
-      // @ts-ignore
       clearImmediate(this.immediateTimer);
       clearTimeout(this.timeoutTimer);
 
@@ -35,7 +34,6 @@ class AsyncQueue {
   pause() {
     this.paused = true;
 
-    // @ts-ignore
     clearImmediate(this.immediateTimer);
     clearTimeout(this.timeoutTimer);
   }
@@ -87,7 +85,6 @@ function listPop(list) {
 function reschedule(queue, delay) {
   if (!queue.paused) {
     if (delay === 0) {
-      // @ts-ignore
       queue.immediateTimer = setImmediate(poll, queue);
     } else {
       queue.timeoutTimer = setTimeout(poll, delay, queue);
@@ -96,7 +93,6 @@ function reschedule(queue, delay) {
 }
 
 async function poll(queue) {
-  // @ts-ignore
   clearImmediate(queue.immediateTimer);
   clearTimeout(queue.timeoutTimer);
 
