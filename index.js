@@ -16,14 +16,7 @@ class AsyncQueue {
   run(func, ...args) {
     const task = new Task(func, ...args);
     listAppend(this, task);
-
-    if (!this.paused && !this.isSaturated()) {
-      clearImmediate(this.immediateId);
-      clearTimeout(this.timeoutId);
-
-      reschedule(this, 0);
-    }
-
+    reschedule(this, 0);
     return task.promise;
   }
 
@@ -79,19 +72,17 @@ function listPop(list) {
 }
 
 function reschedule(queue, delay) {
-  if (!queue.paused) {
-    if (delay === 0) {
-      queue.immediateId = setImmediate(poll, queue);
-    } else {
-      queue.timeoutId = setTimeout(poll, delay, queue);
-    }
+  if (queue.paused) {
+    // noop
+  } else if (delay) {
+    queue.timeoutId = setTimeout(poll, delay, queue);
+  } else {
+    queue.immediateId = setImmediate(poll, queue);
   }
 }
 
 async function poll(queue) {
-  clearImmediate(queue.immediateId);
-  clearTimeout(queue.timeoutId);
-
+  // TODO: is this needed?
   if (queue.paused) {
     return;
   }
@@ -117,7 +108,7 @@ async function poll(queue) {
     queue.runningTaskCount--;
   }
 
-  if (!this.paused && (queue.runningTaskCount - queue.length)) {
+  if (queue.runningTaskCount - queue.length) {
     reschedule(queue, 0);
   }
 }

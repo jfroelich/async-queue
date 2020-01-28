@@ -44,10 +44,10 @@ declare namespace AsyncQueue {
   }
 
   class Task implements ListNode {
-    func: any;
-    resolve: any;
-    reject: any;
-    next: ListNode
+    func: (...args: any[]) => any;
+    resolve: (value?: any) => void;
+    reject: (value?: any) => void;
+    next?: ListNode
   }
 }
 
