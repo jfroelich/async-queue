@@ -78,7 +78,6 @@ function reschedule(queue, delay) {
 }
 
 async function poll(queue) {
-  // TODO: is this needed?
   if (queue.paused) {
     return;
   }
