@@ -18,9 +18,6 @@ declare class AsyncQueue implements AsyncQueue.List {
   /** Enqueue a function to eventually run */
   run(func: (...args: any[]) => any, ...args: any[]): Promise<ReturnType<func>>;
 
-  /** Returns whether the queue is currently at max concurrency */
-  isSaturated(): boolean;
-
   /**
    * Stop polling the queue. Currently running tasks continue but tasks
    * waiting to start will no longer start.

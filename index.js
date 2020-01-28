@@ -20,10 +20,6 @@ class AsyncQueue {
     return task.promise;
   }
 
-  isSaturated() {
-    return this.runningTaskCount >= this.concurrency;
-  }
-
   pause() {
     this.paused = true;
 
@@ -87,7 +83,7 @@ async function poll(queue) {
     return;
   }
 
-  if (queue.isSaturated()) {
+  if (queue.runningTaskCount >= queue.concurrency) {
     reschedule(queue, queue.busyDelay);
     return;
   }
