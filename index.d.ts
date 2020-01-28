@@ -30,17 +30,17 @@ declare class AsyncQueue implements AsyncQueue.List {
 
 declare namespace AsyncQueue {
 
-  interface ListNode {
+  export interface ListNode {
     next: ListNode
   }
 
-  interface List {
+  export interface List {
     head: ListNode
     tail: ListNode
     length: number
   }
 
-  class Task implements ListNode {
+  export class Task implements ListNode {
     func: (...args: any[]) => any;
     resolve: (value?: any) => void;
     reject: (value?: any) => void;
