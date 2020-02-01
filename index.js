@@ -15,8 +15,8 @@ class AsyncQueue {
 
   run(func, ...args) {
     const task = new Task(func, ...args);
-    listAppend(this, task);
-    reschedule(this, 0);
+    this._append(task);
+    this._reschedule();
     return task.promise;
   }
 
@@ -29,51 +29,47 @@ class AsyncQueue {
 
   resume() {
     this.paused = false;
-    reschedule(this, 0);
+    this._reschedule();
   }
 
   get length() {
-    return listLength(this);
-  }
-}
-
-function listLength(list) {
-  let length = 0;
-  let node = list.head;
-  while (node) {
-    node = node.next;
-    length++;
-  }
-  return length;
-}
-
-function listAppend(list, node) {
-  if (list.tail) {
-    list.tail.next = node;
-  } else {
-    list.head = node;
+    let length = 0;
+    let node = this.head;
+    while (node) {
+      node = node.next;
+      length++;
+    }
+    return length;
   }
 
-  list.tail = node;
-}
+  _append(node) {
+    if (this.tail) {
+      this.tail.next = node;
+    } else {
+      this.head = node;
+    }
 
-function listPop(list) {
-  const node = list.head;
-  if (node) {
-    list.head = node.next;
-    list.tail = list.head ? list.tail : undefined;
-    node.next = undefined;
+    this.tail = node;
   }
-  return node;
-}
 
-function reschedule(queue, delay) {
-  if (queue.paused) {
-    // noop
-  } else if (delay > 0) {
-    queue.timeoutId = setTimeout(poll, delay, queue);
-  } else {
-    queue.immediateId = setImmediate(poll, queue);
+  _pop() {
+    const node = this.head;
+    if (node) {
+      this.head = node.next;
+      this.tail = this.head ? this.tail : undefined;
+      node.next = undefined;
+    }
+    return node;
+  }
+
+  _reschedule(delay = 0) {
+    if (this.paused) {
+      // noop
+    } else if (delay > 0) {
+      this.timeoutId = setTimeout(poll, delay, this);
+    } else {
+      this.immediateId = setImmediate(poll, this);
+    }
   }
 }
 
@@ -83,11 +79,11 @@ async function poll(queue) {
   }
 
   if (queue.runningTaskCount >= queue.concurrency) {
-    reschedule(queue, queue.busyDelay);
+    queue._reschedule(queue.busyDelay);
     return;
   }
 
-  const task = listPop(queue);
+  const task = queue._pop();
   if (!task) {
     return;
   }
