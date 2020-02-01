@@ -70,7 +70,7 @@ function listPop(list) {
 function reschedule(queue, delay) {
   if (queue.paused) {
     // noop
-  } else if (delay) {
+  } else if (delay > 0) {
     queue.timeoutId = setTimeout(poll, delay, queue);
   } else {
     queue.immediateId = setImmediate(poll, queue);
@@ -93,7 +93,6 @@ async function poll(queue) {
   }
 
   queue.runningTaskCount++;
-
   try {
     const result = await task.func(...task.args);
     task.resolve(result);
@@ -101,10 +100,6 @@ async function poll(queue) {
     task.reject(error);
   } finally {
     queue.runningTaskCount--;
-  }
-
-  if (queue.runningTaskCount - queue.length) {
-    reschedule(queue, 0);
   }
 }
 
