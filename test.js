@@ -1,8 +1,9 @@
 const AsyncQueue = require('.');
+const assert = require('assert');
 
 async function main() {
   const queue = new AsyncQueue();
-  queue.concurrency = 4;
+  queue.concurrency = 2;
   queue.busyDelay = 1000;
 
   let taskCounter = 0;
@@ -25,7 +26,12 @@ async function main() {
   await new Promise(resolve => setTimeout(resolve, 1000));
   promises.push(queue.run(testTask, 5000));
   const durations = await Promise.all(promises);
+
+  // 5 we added in loop, 1 we added with delay
+  assert(durations.length === 6);
+
   console.log('All tasks completed');
+
   for (const duration of durations) {
     console.log('Task duration:', duration);
   }
