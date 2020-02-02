@@ -11,6 +11,8 @@ class AsyncQueue {
 
     this.paused = false;
     this.busyDelay = 0;
+
+    this._pollBound = this._poll.bind(this);
   }
 
   run(func, ...args) {
@@ -66,36 +68,36 @@ class AsyncQueue {
     if (this.paused) {
       // noop
     } else if (delay > 0) {
-      this.timeoutId = setTimeout(poll, delay, this);
+      this.timeoutId = setTimeout(this._pollBound, delay);
     } else {
-      this.immediateId = setImmediate(poll, this);
+      this.immediateId = setImmediate(this._pollBound);
     }
   }
-}
 
-async function poll(queue) {
-  if (queue.paused) {
-    return;
-  }
+  async _poll() {
+    if (this.paused) {
+      return;
+    }
 
-  if (queue.runningTaskCount >= queue.concurrency) {
-    queue._reschedule(queue.busyDelay);
-    return;
-  }
+    if (this.runningTaskCount >= this.concurrency) {
+      this._reschedule(this.busyDelay);
+      return;
+    }
 
-  const task = queue._pop();
-  if (!task) {
-    return;
-  }
+    const task = this._pop();
+    if (!task) {
+      return;
+    }
 
-  queue.runningTaskCount++;
-  try {
-    const result = await task.func(...task.args);
-    task.resolve(result);
-  } catch (error) {
-    task.reject(error);
-  } finally {
-    queue.runningTaskCount--;
+    this.runningTaskCount++;
+    try {
+      const result = await task.func(...task.args);
+      task.resolve(result);
+    } catch (error) {
+      task.reject(error);
+    } finally {
+      this.runningTaskCount--;
+    }
   }
 }
 

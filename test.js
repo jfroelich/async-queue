@@ -3,7 +3,7 @@ const assert = require('assert');
 
 async function main() {
   const queue = new AsyncQueue();
-  queue.concurrency = 2;
+  queue.concurrency = 3;
   queue.busyDelay = 1000;
 
   let taskCounter = 0;
