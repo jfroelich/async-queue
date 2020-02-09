@@ -75,10 +75,6 @@ class AsyncQueue {
   }
 
   async _poll() {
-    if (this.paused) {
-      return;
-    }
-
     if (this.runningTaskCount >= this.concurrency) {
       this._reschedule(this.busyDelay);
       return;
