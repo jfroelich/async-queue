@@ -2,16 +2,14 @@ declare class AsyncQueue {
   /** The maximum number of concurrent tasks permitted */
   concurrency: number;
 
-  /**
-   * Number of milliseconds to wait during rescheduling when
-   * the queue is saturated
-   */
+  /** Milliseconds to wait during rescheduling when saturated */
   busyDelay: number;
 
+  /** Number of items in the queue (in flight or pending) */
   length: number;
 
   /** Enqueue a function to eventually run */
-  run(func: (...args: any[]) => any, ...args: any[]): Promise<ReturnType<func>>;
+  run(func: (...args: any[]) => Promise<ReturnType<func>>, ...args: any[]): Promise<ReturnType<func>>;
 
   /** Stop polling the queue */
   pause(): void;
