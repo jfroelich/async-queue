@@ -2,16 +2,12 @@ class AsyncQueue {
   constructor() {
     this.head = undefined;
     this.tail = undefined;
-
     this.runningTaskCount = 0;
     this.concurrency = 1;
-
     this.timeoutId = null;
     this.immediateId = null;
-
     this.paused = false;
     this.busyDelay = 0;
-
     this._pollBound = this._poll.bind(this);
   }
 
