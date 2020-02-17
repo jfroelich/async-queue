@@ -1,14 +1,14 @@
 class AsyncQueue {
   constructor() {
-    this.head = undefined;
-    this.tail = undefined;
-    this.runningTaskCount = 0;
+    this._head;
+    this._tail;
+    this._run_count = 0;
     this.concurrency = 1;
-    this.timeoutId = null;
-    this.immediateId = null;
+    this.tid = null;
+    this.iid = null;
     this.paused = false;
-    this.busyDelay = 0;
-    this._pollBound = this._poll.bind(this);
+    this.delay = 0;
+    this._poll_bound = this._poll.bind(this);
   }
 
   run(func, ...args) {
@@ -20,9 +20,8 @@ class AsyncQueue {
 
   pause() {
     this.paused = true;
-
-    clearImmediate(this.immediateId);
-    clearTimeout(this.timeoutId);
+    clearImmediate(this.iid);
+    clearTimeout(this.tid);
   }
 
   resume() {
@@ -32,7 +31,7 @@ class AsyncQueue {
 
   get length() {
     let length = 0;
-    let node = this.head;
+    let node = this._head;
     while (node) {
       node = node.next;
       length++;
@@ -41,20 +40,20 @@ class AsyncQueue {
   }
 
   _append(node) {
-    if (this.tail) {
-      this.tail.next = node;
+    if (this._tail) {
+      this._tail.next = node;
     } else {
-      this.head = node;
+      this._head = node;
     }
 
-    this.tail = node;
+    this._tail = node;
   }
 
   _pop() {
-    const node = this.head;
+    const node = this._head;
     if (node) {
-      this.head = node.next;
-      this.tail = this.head ? this.tail : undefined;
+      this._head = node.next;
+      this._tail = this._head ? this._tail : undefined;
       node.next = undefined;
     }
     return node;
@@ -63,16 +62,19 @@ class AsyncQueue {
   _reschedule(delay = 0) {
     if (this.paused) {
       // noop
+    } if (!this._head) {
+      console.warn('empty reschedule not honored');
+      // noop
     } else if (delay > 0) {
-      this.timeoutId = setTimeout(this._pollBound, delay);
+      this.tid = setTimeout(this._poll_bound, delay);
     } else {
-      this.immediateId = setImmediate(this._pollBound);
+      this.iid = setImmediate(this._poll_bound);
     }
   }
 
   async _poll() {
-    if (this.runningTaskCount >= this.concurrency) {
-      this._reschedule(this.busyDelay);
+    if (this._run_count >= this.concurrency) {
+      this._reschedule(this.delay);
       return;
     }
 
@@ -81,14 +83,14 @@ class AsyncQueue {
       return;
     }
 
-    this.runningTaskCount++;
+    this._run_count++;
     try {
       const result = await task.func(...task.args);
       task.resolve(result);
     } catch (error) {
       task.reject(error);
     } finally {
-      this.runningTaskCount--;
+      this._run_count--;
     }
   }
 }

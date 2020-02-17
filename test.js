@@ -3,11 +3,10 @@ const assert = require('assert');
 
 async function main() {
   const queue = new AsyncQueue();
-  queue.concurrency = 3;
-  queue.busyDelay = 1000;
+  queue.concurrency = 2;
+  queue.delay = 200;
   let taskCounter = 0;
 
-  /** @returns {Promise<number>} */
   async function testTask(duration) {
     const id = taskCounter++;
     console.log('start task id %s duration %d', id, duration);
@@ -22,11 +21,13 @@ async function main() {
     promises.push(promise);
   }
 
+  // Schedule a task after a some delay. This can expose subtle
+  // bad behavior in reschedule logic.
   await new Promise(resolve => setTimeout(resolve, 1000));
   promises.push(queue.run(testTask, 5000));
+
   const durations = await Promise.all(promises);
 
-  // 5 we added in loop, 1 we added with delay
   assert(durations.length === 6);
 
   console.log('All tasks completed');

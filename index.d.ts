@@ -3,7 +3,7 @@ declare class AsyncQueue {
   concurrency: number;
 
   /** Milliseconds to wait during rescheduling when saturated */
-  busyDelay: number;
+  delay: number;
 
   /** Number of items in the queue (in flight or pending) */
   length: number;
