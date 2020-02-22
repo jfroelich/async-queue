@@ -62,7 +62,7 @@ class AsyncQueue {
   _reschedule(delay = 0) {
     if (this.paused) {
       // noop
-    } if (!this._head) {
+    } else if (!this._head) {
       console.warn('empty reschedule not honored');
       // noop
     } else if (delay > 0) {
