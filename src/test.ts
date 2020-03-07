@@ -1,13 +1,15 @@
-const AsyncQueue = require('.');
-const assert = require('assert');
+import AsyncQueue from '.';
+import assert from 'assert';
 
 async function main() {
-  const queue = new AsyncQueue();
-  queue.concurrency = 2;
-  queue.delay = 200;
+  const queue = new AsyncQueue({
+    concurrency: 2,
+    delay: 200
+  });
+
   let taskCounter = 0;
 
-  async function testTask(duration) {
+  async function testTask(duration: number) {
     const id = taskCounter++;
     console.log('start task id %s duration %d', id, duration);
     await new Promise(resolve => setTimeout(resolve, duration));

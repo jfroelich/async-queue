@@ -1,0 +1,28 @@
+{
+  "compileOnSave": true,
+  "include": [
+    "src/*.ts"
+  ],
+  "compilerOptions": {
+    "module": "CommonJS",
+    "target": "ES2020",
+    "allowJs": false,
+    "alwaysStrict": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "checkJs": false,
+    "declaration": true,
+    "esModuleInterop": true,
+    "inlineSourceMap": true,
+    "incremental": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "outDir": "dist",
+    "watch": true,
+    "pretty": true,
+    "strict": true,
+    "strictBindCallApply": true,
+    "strictNullChecks": false,
+    "noEmit": false
+  }
+}

@@ -1,15 +1,16 @@
 {
   "name": "async-queue",
-  "version": "1.0.0",
-  "description": "simple promise-based async queue",
-  "main": "index.js",
+  "version": "2.0.0",
+  "description": "Simple promise-based async queue",
+  "main": "dist/index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jfroelich/async-queue.git"
   },
   "keywords": [
     "async",
-    "queue"
+    "queue",
+    "promise"
   ],
   "author": "Josh Froelich",
   "license": "MIT",
@@ -17,8 +18,9 @@
     "url": "https://github.com/jfroelich/async-queue/issues"
   },
   "homepage": "https://github.com/jfroelich/async-queue#readme",
-  "types": "index.d.ts",
+  "types": "dist/index.d.ts",
   "devDependencies": {
-    "@types/node": "^13.5.0"
+    "@types/node": "^13.5.0",
+    "typescript": "^3.8.3"
   }
 }
