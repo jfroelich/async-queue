@@ -1,14 +1,16 @@
 class AsyncQueue {
-  constructor() {
+  constructor(options = {}) {
+    const { paused = false, delay = 0, concurrency = 1 } = options;
     this._head;
     this._tail;
     this._run_count = 0;
-    this.concurrency = 1;
+    this.concurrency = concurrency;
     this.tid = null;
     this.iid = null;
-    this.paused = false;
-    this.delay = 0;
     this._poll_bound = this._poll.bind(this);
+
+    this.paused = paused;
+    this.delay = delay;
   }
 
   run(func, ...args) {
