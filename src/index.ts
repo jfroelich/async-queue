@@ -1,14 +1,34 @@
-interface ConstructorOptions {
-  /** Whether the queue should init to a paused state */
-  paused: boolean;
-  /** The amount of milliseconds to wait when retrying when busy */
-  delay: number;
-  /** The maximum number of concurrently executing functions */
-  concurrency: number;
+type AnyFunction = (...args: any[]) => any;
+
+interface Countable {
+  length: number;
 }
 
-/** Any function, including async or promise returning functions */
-type RunnableFunction = (...args: any[]) => any;
+interface Discontinuous {
+  readonly pause: AnyFunction;
+  readonly resume: AnyFunction;
+}
+
+interface List<T> {
+  head: T;
+  tail: T;
+
+  /** Add an item */
+  readonly append: AnyFunction;
+}
+
+interface Queue<T> extends List<T>, Countable {
+  readonly pop: AnyFunction;
+}
+
+interface ConstructorOptions {
+  /** Whether the queue should init to a paused state */
+  readonly paused: boolean;
+  /** The amount of milliseconds to wait when retrying when busy */
+  readonly delay: number;
+  /** The maximum number of concurrently executing functions */
+  readonly concurrency: number;
+}
 
 /**
  * A simple promise-based asynchronous queue. Useful for tasks
@@ -20,13 +40,19 @@ type RunnableFunction = (...args: any[]) => any;
  *   await queue.run(myFunction, arg1, arg2);
  *   queue.resume();
  */
-export default class AsyncQueue {
+export default class AsyncQueue implements Discontinuous, Queue<Task> {
   /** Whether the queue is currently paused */
-  paused: boolean;
-  /** The first item in the queue */
-  _head?: Task;
-  /** The last item in the queue */
-  _tail?: Task;
+  private paused: boolean;
+  /**
+   * The first item in the queue
+   * @private
+   */
+  head: Task;
+  /**
+   * The last item in the queue
+   * @private
+   */
+  tail: Task;
   /** A count of currently running tasks */
   _run_count: number;
   /** The maximum number of concurrently executing functions */
@@ -34,53 +60,47 @@ export default class AsyncQueue {
   /** The amount of milliseconds to wait when retrying when busy */
   delay: number;
   /** Handle to a setTimeout timer */
-  tid: NodeJS.Timeout;
+  private tid: NodeJS.Timeout;
   /** Handle to a setImmediate timer */
-  iid: NodeJS.Immediate;
+  private iid: NodeJS.Immediate;
   /** poll function bound to current instance */
-  _poll_bound: any;
+  private readonly poll_bound: AnyFunction;
 
   constructor(options: Partial<ConstructorOptions> = {}) {
     const { paused = false, delay = 0, concurrency = 1 } = options;
-    this._head;
-    this._tail;
+    this.head;
+    this.tail;
     this._run_count = 0;
     this.concurrency = concurrency;
     this.tid;
     this.iid;
-    this._poll_bound = this._poll.bind(this);
+    this.poll_bound = this.poll.bind(this);
 
     this.paused = paused;
     this.delay = delay;
   }
 
-  run(func: RunnableFunction, ...args: any[]) {
+  run(func: AnyFunction, ...args: any[]) {
     const task = new Task(func, ...args);
-    this._append(task);
-    this._reschedule();
+    this.append(task);
+    this.reschedule();
     return task.promise;
   }
 
-  /**
-   * Ask the queue to not immediately start running tasks
-   * when enqueued
-   */
   pause() {
     this.paused = true;
     clearImmediate(this.iid);
     clearTimeout(this.tid);
   }
 
-  /** Ask the queue to start running any pending tasks */
   resume() {
     this.paused = false;
-    this._reschedule();
+    this.reschedule();
   }
 
-  /** Returns the number of items in the queue */
   get length() {
     let length = 0;
-    let node = this._head;
+    let node = this.head;
     while (node) {
       node = node.next;
       length++;
@@ -88,46 +108,49 @@ export default class AsyncQueue {
     return length;
   }
 
-  _append(node: Task): void {
-    if (this._tail) {
-      this._tail.next = node;
+  append(node: Task) {
+    if (this.tail) {
+      this.tail.next = node;
     } else {
-      this._head = node;
+      this.head = node;
     }
 
-    this._tail = node;
+    this.tail = node;
   }
 
-  _pop(): Task | undefined {
-    const node = this._head;
+  pop(): Task {
+    const node = this.head;
     if (node) {
-      this._head = node.next;
-      this._tail = this._head ? this._tail : undefined;
+      this.head = node.next;
+      this.tail = this.head ? this.tail : undefined;
       node.next = undefined;
     }
     return node;
   }
 
-  _reschedule(delay = 0) {
+  /**
+   * @param delay milliseconds to wait before polling
+   */
+  reschedule(delay = 0) {
     if (this.paused) {
       // noop
-    } else if (!this._head) {
+    } else if (!this.head) {
       console.warn('empty reschedule not honored');
       // noop
     } else if (delay > 0) {
-      this.tid = setTimeout(this._poll_bound, delay);
+      this.tid = setTimeout(this.poll_bound, delay);
     } else {
-      this.iid = setImmediate(this._poll_bound);
+      this.iid = setImmediate(this.poll_bound);
     }
   }
 
-  async _poll() {
+  async poll() {
     if (this._run_count >= this.concurrency) {
-      this._reschedule(this.delay);
+      this.reschedule(this.delay);
       return;
     }
 
-    const task = this._pop();
+    const task = this.pop();
     if (!task) {
       return;
     }
@@ -145,14 +168,14 @@ export default class AsyncQueue {
 }
 
 class Task {
-  func: RunnableFunction;
+  func: AnyFunction;
   args: any[];
-  promise: Promise<ReturnType<RunnableFunction>>;
+  promise: Promise<ReturnType<AnyFunction>>;
   resolve: (value?: any) => void;
   reject: (reason?: any) => void;
   next?: Task;
 
-  constructor(func: RunnableFunction, ...args: any[]) {
+  constructor(func: AnyFunction, ...args: any[]) {
     this.resolve = () => { };
     this.reject = () => { };
     this.next;

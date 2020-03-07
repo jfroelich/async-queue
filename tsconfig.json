@@ -1,7 +1,7 @@
 {
   "compileOnSave": true,
   "include": [
-    "src/*.ts"
+    "src"
   ],
   "compilerOptions": {
     "module": "CommonJS",
@@ -14,12 +14,11 @@
     "declaration": true,
     "esModuleInterop": true,
     "inlineSourceMap": true,
-    "incremental": true,
     "noImplicitAny": true,
     "noUnusedLocals": true,
     "outDir": "dist",
     "watch": true,
-    "pretty": true,
+    "pretty": false,
     "strict": true,
     "strictBindCallApply": true,
     "strictNullChecks": false,
